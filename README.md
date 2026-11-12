@@ -24,6 +24,13 @@ Ein Science-Fiction-Kontrollraum als einzelne HTML-Datei, inspiriert von **Starg
 - Desktop/Laptop: Kopfleiste, linkes und rechtes Panel, Stargate-/Radar-Ring in der Mitte, Laufband unten.
 - Handy (≤ 700 px): Seitenpanels werden zu Tabs.
 
+## Leistung
+
+- Alles, was sich bewegt, läuft als **CSS-Animation auf einer eigenen Ebene** (Bögen, Glyphenring, Radarstrahl, Radarpunkte, Wellen, Karten-Strahl, Lebenszeichen, Kurve): das dreht die Grafikkarte, ohne neu zu malen. Es gibt keine Bild-für-Bild-Schleife in JavaScript; JS zieht nur zweimal pro Sekunde nach, was sich geändert hat.
+- Der Hintergrund ist statisch (gezeichnet nur bei Größen- oder Theme-Wechsel): unter den Glas-Panels (`backdrop-filter`) würde jedes neue Hintergrundbild alle Panels neu weichzeichnen.
+- Gemessen in Firefox: vorher 8–10, jetzt 21–22 Bilder/s.
+- Zum Eingrenzen einzelne Effekte abschalten: `index.html?x=noblur,noscan,noclip,nocss`.
+
 ## Screenshots
 
 | | Atlantis | OASIS |
