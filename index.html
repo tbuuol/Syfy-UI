@@ -581,6 +581,7 @@ const root = document.documentElement;
 const css = n => getComputedStyle(root).getPropertyValue(n).trim();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function el(tag, attrs = {}, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
 
 /* ---------------------------------------------------------------- invented glyph script */
@@ -943,7 +944,7 @@ const slotEls = [...document.querySelectorAll('.slot')];
 
 /* ---------------------------------------------------------------- dialing state machine */
 let ringAngle = 0;
-const ORDER = [1, 2, 3, 6, 7, 8, 0];
+const ORDER = [1, 2, 3, 6, 7, 8, 4, 5, 0];   // 9 Chevrons wie beim Tor mit 9 Schloessern: Seiten, unten, zuletzt oben
 function setStatus(main, sub, ok) {
   $('#statusMain').textContent = main; $('#statusSub').textContent = sub;
   $('#status').classList.toggle('ok', !!ok);
@@ -971,8 +972,8 @@ function lockVisual(k, gIdx) {
   glyphEls[gIdx].classList.add('sel');
   slotEls[k].innerHTML = glyphSvg(gIdx, 1.2) + `<span>${k + 1}</span>`;
   slotEls[k].classList.add('on');
-  setStatus(k === 6 ? 'Verriegelt' : 'Wählvorgang', `Chevron ${k + 1} verriegelt`);
-  ctB.textContent = `${k + 1} / 7`;
+  setStatus(k === 8 ? 'Verriegelt' : 'Wählvorgang', `Chevron ${k + 1} verriegelt`);
+  ctB.textContent = `${k + 1} / 9`;
 }
 function resetGate() {
   chevs.forEach(c => c.classList.remove('lit', 'flash'));
@@ -984,7 +985,7 @@ function resetGate() {
 }
 function newAddress(seed) {
   const r = rng(seed), a = [];
-  while (a.length < 7) { const g = Math.floor(r() * 39); if (!a.includes(g)) a.push(g); }
+  while (a.length < 9) { const g = Math.floor(r() * 39); if (!a.includes(g)) a.push(g); }
   return a;
 }
 function establish() {
@@ -1002,10 +1003,10 @@ async function dialLoop() {
   ringAngle = -addr[startAt - 1] * 360 / 39;
   showRing(ringAngle, 0);
   for (let k = 0; k < startAt; k++) lockVisual(k, addr[k]);
-  if (reduce) { for (let k = startAt; k < 7; k++) lockVisual(k, addr[k]); establish(); return; }
+  if (reduce) { for (let k = startAt; k < 9; k++) lockVisual(k, addr[k]); establish(); return; }
   await sleep(2600);
   for (;;) {
-    for (let k = startAt; k < 7; k++) {
+    for (let k = startAt; k < 9; k++) {
       const target = -addr[k] * 360 / 39;
       // alternate direction and add a full spin for drama
       let delta = ((target - ringAngle) % 360 + 360) % 360;
@@ -1015,7 +1016,7 @@ async function dialLoop() {
       chevs[0].classList.add('lit', 'flash');
       await sleep(260);
       chevs[0].classList.remove('flash');
-      if (k !== 6) chevs[0].classList.remove('lit');
+      if (k !== 8) chevs[0].classList.remove('lit');
       lockVisual(k, addr[k]);
       $('#sPow').innerHTML = (12.8 + k * 6.1).toFixed(1) + '<small>%</small>';
       $('#sPowBar').style.width = (13 + k * 6) + '%';
